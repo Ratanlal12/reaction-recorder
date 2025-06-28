@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reaction Recorder</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #121212;
+      color: #fff;
+      padding: 20px;
+    }
+    video {
+      width: 45%;
+      max-width: 100%;
+      margin: 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.1);
+    }
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      background-color: #ff4081;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff1e66;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎥 Reaction Recorder (Camera Only)</h1>
+
+  <input type="file" accept="video/*" onchange="loadVideo(event)">
+  <br><br>
+  <video id="videoPlayer" controls></video>
+  <video id="cameraFeed" autoplay muted></video>
+  <br>
+  <button onclick="startCamera()">🎥 Start Camera</button>
+  <button onclick="startRecording()">🔴 Start Recording</button>
+  <button onclick="stopRecording()">⏹️ Stop Recording</button>
+  <button onclick="download()">⬇️ Download Reaction</button>
+
+  <script>
+    let cameraStream;
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    function loadVideo(e) {
+      const file = e.target.files[0];
+      const url = URL.createObjectURL(file);
+      document.getElementById("videoPlayer").src = url;
+    }
+
+    async function startCamera() {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      document.getElementById("cameraFeed").srcObject = cameraStream;
+    }
+
+    function startRecording() {
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(cameraStream);
+      mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+      mediaRecorder.start();
+      alert("🎬 Recording Started (Only your camera is recorded)");
+    }
+
+    function stopRecording() {
+      mediaRecorder.stop();
+      alert("🛑 Recording Stopped");
+    }
+
+    function download() {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "reaction_only_video.webm";
+      a.click();
+    }
+  </script>
+
+</body>
+</html>
